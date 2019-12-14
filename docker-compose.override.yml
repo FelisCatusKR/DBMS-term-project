@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: ./src
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./src/app:/app
+    ports:
+      - "80:80"
+
+  db:
+    ports:
+      - "5432:5432"

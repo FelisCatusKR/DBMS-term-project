@@ -13,16 +13,11 @@ class HospReservationCreate(HospReservationBase):
     date: datetime
 
 
-class HospReservationUpdate(HospReservationBase):
-    prescribed_date: datetime
-
-
 class HospReservation(HospReservationBase):
     id: int
     user_id: Optional[int]
     hosp_id: Optional[int]
     date: datetime
-    prescribed_date: datetime
 
     class Config(BaseConfig):
         orm_mode = True

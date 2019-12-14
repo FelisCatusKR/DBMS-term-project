@@ -7,11 +7,9 @@ RUN pip install --no-cache-dir fastapi \
                                psycopg2-binary \
                                requests
 
-COPY ./prestart.sh /prestart.sh
-RUN chmod +x /prestart.sh
-RUN /prestart.sh
-
-WORKDIR /app/
 ENV PYTHONPATH=/app
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
+COPY ./init_db.py ./customers.csv ./drugs.csv ./start.sh /
+CMD chmod +x /start.sh
+
+CMD ["/start.sh"]

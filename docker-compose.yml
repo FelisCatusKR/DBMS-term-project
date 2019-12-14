@@ -6,6 +6,8 @@ services:
       context: ./src
       dockerfile: Dockerfile
     env_file: app.env
+    depends_on:
+      - db
 
   db:
     image: mdillon/postgis:11-alpine

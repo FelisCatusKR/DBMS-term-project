@@ -1,15 +1,18 @@
-import sys
+import random, re, csv, os
+from json.decoder import JSONDecodeError
+from typing import Optional
+
 import requests
-import random
-import re
-import csv
+
 from app.database import Base, engine, Session
 from app.crud.shop import create as create_shop
 from app.crud.hospital import create as create_hospital
 from app.crud.user import create as create_user, read_by_email
+from app.crud.drug import create as create_drug, read_by_name
 from app.schemas.hospital import HospitalCreate
 from app.schemas.shop import ShopCreate
 from app.schemas.user import UserCreate
+from app.schemas.drug import DrugCreate
 from app.models.user import User
 from app.models.hospital import Hospital
 from app.models.shop import Shop
@@ -18,7 +21,7 @@ from app.models.prescription import Prescription
 from app.models.reservation import HospReservation, ShopReservation
 
 
-def request_url(url: str, serviceKey: str, page: int):
+def request_url(url: str, serviceKey: str, page: int) -> Optional[dict]:
     queryParams = {
         "ServiceKey": serviceKey,
         "pageNo": page,
@@ -26,10 +29,14 @@ def request_url(url: str, serviceKey: str, page: int):
         "_type": "json",
     }
     r = requests.get(url, params=queryParams)
-    if r.status_code is not 200:
-        return {}
-    else:
-        return r.json()
+    json: dict = {}
+    try:
+        json = r.json()
+    except JSONDecodeError:
+        print("Error: response content is not JSON")
+        print(r.text)
+    finally:
+        return json
 
 
 def add_hospital(item: dict):
@@ -259,7 +266,7 @@ def add_user(item: dict):
     )
     db = Session()
     try:
-        if read_by_email(db, user.email) is not None:
+        if read_by_email(db, email=user.email) is not None:
             print(
                 f"Warning: the email of this user is already registered: {user.email}"
             )
@@ -272,7 +279,23 @@ def add_user(item: dict):
         db.close()
 
 
-def init_db(serviceKey: str):
+def add_drug(item: dict):
+    drug = DrugCreate(name=item["name"], unit=item["unit"])
+    db = Session()
+    try:
+        if read_by_name(db, name=drug.name) is not None:
+            print(f"Warning: the name of this drug is already registered: {drug.name}")
+            return
+        create_drug(db, drug=drug)
+    except:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def init_db():
+    serviceKey: str = os.environ["SERVICE_KEY"]
     Base.metadata.create_all(bind=engine)
 
     # Adding hospitals from API
@@ -282,17 +305,19 @@ def init_db(serviceKey: str):
     url = (
         "http://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncFullDown"
     )
-    totPage = 1
+    totPage = 700
     curPage = 1
     while curPage <= totPage:
         js = request_url(url, serviceKey, curPage)
-        if curPage is 1:
-            totPage = int(js["response"]["body"]["totalCount"] / 100)
-            print(
-                "Total hospitals in API: ", int(js["response"]["body"]["totalCount"]),
-            )
-        for item in js["response"]["body"]["items"]["item"]:
-            add_hospital(item)
+        if js is not {}:
+            if curPage is 1:
+                totPage = int(js["response"]["body"]["totalCount"] / 100)
+                print(
+                    "Total hospitals in API: ",
+                    int(js["response"]["body"]["totalCount"]),
+                )
+            for item in js["response"]["body"]["items"]["item"]:
+                add_hospital(item)
         if curPage % 20 is 0:
             print(f"{curPage} pages processed ({curPage} / {totPage})")
         curPage += 1
@@ -306,18 +331,19 @@ def init_db(serviceKey: str):
     url = (
         " http://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyFullDown"
     )
-    totPage = 1
+    totPage = 200
     curPage = 1
     while curPage <= totPage:
         js = request_url(url, serviceKey, curPage)
-        if curPage is 1:
+        if js is not {}:
+            if curPage is 1:
+                totPage = int(js["response"]["body"]["totalCount"] / 100)
+                print(
+                    "Total shops in API: ", int(js["response"]["body"]["totalCount"]),
+                )
+            for item in js["response"]["body"]["items"]["item"]:
+                add_shop(item)
             totPage = int(js["response"]["body"]["totalCount"] / 100)
-            print(
-                "Total shops in API: ", int(js["response"]["body"]["totalCount"]),
-            )
-        for item in js["response"]["body"]["items"]["item"]:
-            add_shop(item)
-        totPage = int(js["response"]["body"]["totalCount"] / 100)
         if curPage % 20 is 0:
             print(f"{curPage} pages processed ({curPage} / {totPage})")
         curPage += 1
@@ -329,7 +355,7 @@ def init_db(serviceKey: str):
     print("============================")
     print("Adding initial user data")
     print("============================")
-    with open("customers.csv", newline="") as r:
+    with open("customers.csv", mode="r", newline="", encoding="UTF-8") as r:
         reader = csv.DictReader(r)
         idx: int = 1
         for item in reader:
@@ -344,11 +370,11 @@ def init_db(serviceKey: str):
     print("============================")
     print("Adding initial drug data")
     print("============================")
-    with open("drugs.csv", newline="") as r:
+    with open("drugs.csv", mode="r", newline="", encoding="UTF-8") as r:
         reader = csv.DictReader(r)
         idx: int = 1
         for item in reader:
-            add_user(item)
+            add_drug(item)
             if idx % 500 is 0:
                 print(f"{idx} lines processed")
             idx += 1
@@ -359,5 +385,5 @@ def init_db(serviceKey: str):
 if __name__ == "__main__":
     print("Initialize DB")
     Base.metadata.create_all(bind=engine)
-    init_db(sys.argv[1])
+    init_db()
     print("Initializing finished")

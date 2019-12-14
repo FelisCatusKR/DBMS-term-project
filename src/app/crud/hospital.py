@@ -6,13 +6,12 @@ from app.schemas.hospital import HospitalCreate, HospitalUpdate
 from app.models.hospital import Hospital
 
 
-def read(db: Session, *, hospital_id: int) -> Optional[Hospital]:
+def read(db: Session, hospital_id: int) -> Optional[Hospital]:
     return db.query(Hospital).filter(Hospital.id == hospital_id).first()
 
 
 def read_by_distance(
     db: Session,
-    *,
     q: Optional[str],
     lon: float,
     lat: float,
@@ -42,7 +41,7 @@ def read_by_distance(
         )
 
 
-def create(db: Session, *, hospital_in: HospitalCreate) -> Hospital:
+def create(db: Session, hospital_in: HospitalCreate) -> Hospital:
     geom = f"POINT({hospital_in.lon} {hospital_in.lat})"
     db_hospital = Hospital(
         name=hospital_in.name,
@@ -76,7 +75,7 @@ def create(db: Session, *, hospital_in: HospitalCreate) -> Hospital:
     return db_hospital
 
 
-def update(db: Session, *, hospital: Hospital, hospital_in: HospitalUpdate) -> Hospital:
+def update(db: Session, hospital: Hospital, hospital_in: HospitalUpdate) -> Hospital:
     hospital_data = jsonable_encoder(hospital)
     update_data = hospital_in.dict(skip_defaults=True)
     for field in hospital_data:

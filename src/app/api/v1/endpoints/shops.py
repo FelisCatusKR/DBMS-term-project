@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import Depends, APIRouter, HTTPException, Path
 
 from app.database import Session
-from app.crud import shop, reservation
+from app.crud import shop, reservation, prescription
 from app.schemas.shop import Shop, ShopCreate, ShopUpdate
 from app.schemas.reservation import (
     ShopReservation,
@@ -19,7 +19,6 @@ router = APIRouter()
 @router.get("/", response_model=List[Shop])
 def read_shops(
     db: Session = Depends(get_db),
-    *,
     q: Optional[str] = None,
     skip: int = 0,
     limit: conint(le=100) = 100,
@@ -42,7 +41,6 @@ def create(db: Session = Depends(get_db), *, shop_in: ShopCreate):
 @router.get("/{shop_id}", response_model=Shop)
 def read(
     db: Session = Depends(get_db),
-    *,
     shop_id: int = Path(..., title="The ID of the shop to read", ge=1),
 ):
     shp = shop.read(db, shop_id=shop_id)
@@ -53,14 +51,14 @@ def read(
     return shp
 
 
-@router.put("/{user_id}", response_model=Shop)
+@router.put("/{shop_id}", response_model=Shop)
 def update(
     db: Session = Depends(get_db),
     *,
-    shp_id: int = Path(..., title="The ID of the shop to update", ge=1),
+    shop_id: int = Path(..., title="The ID of the shop to update", ge=1),
     shop_in: ShopUpdate,
 ):
-    shp = shop.read(db, shop_id=shp_id)
+    shp = shop.read(db, shop_id=shop_id)
     if not shp:
         raise HTTPException(
             status_code=404, detail="Shop not found",
@@ -90,22 +88,34 @@ def read_reservation_list(
 @router.post("/{shop_id}/reservations", response_model=ShopReservation)
 def create_reservation(
     db: Session = Depends(get_db),
+    *,
     shop_id: int = Path(..., title="The ID of the shop to read", ge=1),
-    shop_in: ShopReservationCreate = None,
+    rsrv_in: ShopReservationCreate,
 ):
     shp = shop.read(db, shop_id=shop_id)
     if not shp:
         raise HTTPException(
             status_code=404, detail="Shop not found",
         )
-    shop_reservation = reservation.create_shop(db, shop_id=shop_id, rsrv_in=shop_in)
+    pres = prescription.read(db, prescription_id=rsrv_in.prescription_id)
+    if pres.filled_shop_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="The submitted prescription is already filled from another store",
+        )
+    hosp_rsrv = reservation.read_hosp(db, reservation_id=pres.hospital_reservation_id)
+    if rsrv_in.user_id is not hosp_rsrv.user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="The submitted user ID is different with the prescription's one",
+        )
+    shop_reservation = reservation.create_shop(db, shop_id=shop_id, rsrv_in=rsrv_in)
     return shop_reservation
 
 
 @router.get("/{shop_id}/reservations/{reservation_id}", response_model=ShopReservation)
 def read_reservation(
     db: Session = Depends(get_db),
-    *,
     shop_id: int = Path(..., title="The ID of the shop to read", ge=1),
     reservation_id: int = Path(..., title="The ID of the reservation to read", ge=1),
 ):

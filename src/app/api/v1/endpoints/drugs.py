@@ -1,21 +1,28 @@
 from pydantic import *
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Path, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.utils.db import get_db
 from app.crud import drug
-from app.schemas.drug import Drug, DrugCreate, DrugUpdate
+from app.schemas.drug import (
+    Drug,
+    DrugCreate,
+    DrugUpdate,
+)
 
 router = APIRouter()
 
 
 @router.get("/", response_model=List[Drug])
-def read_drugs(
-    db: Session = Depends(get_db), *, skip: int = 0, limit: conint(le=100) = 100,
+def read_multi(
+    db: Session = Depends(get_db),
+    q: Optional[str] = None,
+    skip: Optional[int] = 0,
+    limit: Optional[conint(le=100)] = 100,
 ):
-    drugs = drug.read_multi(db, skip=skip, limit=limit)
+    drugs = drug.read_multi_by_name(db, q=q, skip=skip, limit=limit)
     return drugs
 
 
@@ -28,7 +35,6 @@ def create(db: Session = Depends(get_db), *, drug_in: DrugCreate):
 @router.get("/{drug_id}", response_model=Drug)
 def read(
     db: Session = Depends(get_db),
-    *,
     drug_id: int = Path(..., title="The ID of the drug to read", ge=1),
 ):
     drg = drug.read(db, drug_id=drug_id)

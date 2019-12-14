@@ -11,12 +11,27 @@ def read(db: Session, drug_id: int) -> Optional[Drug]:
     return db.query(Drug).filter(Drug.id == drug_id).first()
 
 
-def read_by_name(db: Session, name: str) -> List[Optional[Drug]]:
-    return db.query(Drug).filter(Drug.name.ilike(f"%{name}%")).all()
+def read_by_name(db: Session, name: str) -> Optional[Drug]:
+    return db.query(Drug).filter(Drug.name == name).first()
 
 
-def read_multi(db: Session, *, skip=0, limit=100) -> List[Optional[Drug]]:
+def read_multi(db: Session, skip: int, limit: int) -> List[Optional[Drug]]:
     return db.query(Drug).offset(skip).limit(limit).all()
+
+
+def read_multi_by_name(
+    db: Session, q: Optional[str], skip: int, limit: int
+) -> List[Optional[Drug]]:
+    if q is None:
+        return db.query(Drug).offset(skip).limit(limit).all()
+    else:
+        return (
+            db.query(Drug)
+            .filter(Drug.name.ilike(f"%{q}%"))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
 
 def create(db: Session, drug: DrugCreate) -> Drug:
@@ -27,7 +42,7 @@ def create(db: Session, drug: DrugCreate) -> Drug:
     return db_drug
 
 
-def update(db: Session, *, drug: Drug, drug_in: DrugUpdate) -> Drug:
+def update(db: Session, drug: Drug, drug_in: DrugUpdate) -> Drug:
     original_data = jsonable_encoder(drug)
     update_data = drug_in.dict(skip_defaults=True)
     for field in original_data:

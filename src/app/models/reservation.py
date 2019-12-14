@@ -9,7 +9,6 @@ class HospReservation(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
     hosp_id = Column(Integer, ForeignKey("hospitals.id", ondelete="SET NULL"))
     date = Column(DateTime, nullable=False)
-    prescribed_date = Column(DateTime)
 
 
 class ShopReservation(Base):

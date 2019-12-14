@@ -6,13 +6,12 @@ from app.schemas.shop import ShopCreate, ShopUpdate
 from app.models.shop import Shop
 
 
-def read(db: Session, *, shop_id: int) -> Optional[Shop]:
+def read(db: Session, shop_id: int) -> Optional[Shop]:
     return db.query(Shop).filter(Shop.id == shop_id).first()
 
 
 def read_by_distance(
     db: Session,
-    *,
     q: Optional[str],
     lon: float,
     lat: float,
@@ -42,7 +41,7 @@ def read_by_distance(
         )
 
 
-def create(db: Session, *, shop_in: ShopCreate) -> Shop:
+def create(db: Session, shop_in: ShopCreate) -> Shop:
     geom = f"POINT({shop_in.lon} {shop_in.lat})"
     db_shop = Shop(
         name=shop_in.name,
@@ -75,7 +74,7 @@ def create(db: Session, *, shop_in: ShopCreate) -> Shop:
     return db_shop
 
 
-def update(db: Session, *, shop: Shop, shop_in: ShopUpdate) -> Shop:
+def update(db: Session, shop: Shop, shop_in: ShopUpdate) -> Shop:
     shop_data = jsonable_encoder(shop)
     update_data = shop_in.dict(skip_defaults=True)
     for field in shop_data:

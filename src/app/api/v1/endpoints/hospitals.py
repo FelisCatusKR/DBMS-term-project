@@ -8,7 +8,6 @@ from app.schemas.hospital import Hospital, HospitalCreate, HospitalUpdate
 from app.schemas.reservation import (
     HospReservation,
     HospReservationCreate,
-    HospReservationUpdate,
 )
 from app.api.utils.db import get_db
 
@@ -18,7 +17,6 @@ router = APIRouter()
 @router.get("/", response_model=List[Hospital])
 def read_hospitals(
     db: Session = Depends(get_db),
-    *,
     q: Optional[str] = None,
     skip: int = 0,
     limit: conint(le=100) = 100,
@@ -41,7 +39,6 @@ def create(db: Session = Depends(get_db), *, hosp_in: HospitalCreate):
 @router.get("/{hospital_id}", response_model=Hospital)
 def read(
     db: Session = Depends(get_db),
-    *,
     hospital_id: int = Path(..., title="The ID of the hospital to read", ge=1),
 ):
     hosp = hospital.read(db, hospital_id=hospital_id)
@@ -89,8 +86,9 @@ def read_reservation_list(
 @router.post("/{hospital_id}/reservations", response_model=HospReservation)
 def create_reservation(
     db: Session = Depends(get_db),
+    *,
     hospital_id: int = Path(..., title="The ID of the hospital to read", ge=1),
-    rsrv_in: HospReservationCreate = None,
+    rsrv_in: HospReservationCreate,
 ):
     hosp = hospital.read(db, hospital_id=hospital_id)
     if not hosp:
@@ -108,7 +106,6 @@ def create_reservation(
 )
 def read_reservation(
     db: Session = Depends(get_db),
-    *,
     hospital_id: int = Path(..., title="The ID of the hospital to read", ge=1),
     reservation_id: int = Path(..., title="The ID of the reservation to read", ge=1),
 ):
@@ -127,15 +124,15 @@ def read_reservation(
     return hosp_reservation
 
 
-@router.put(
-    "/{hospital_id}/reservations/{reservation_id}", response_model=HospReservation
+@router.delete(
+    "/{hospital_id}/reservations/{reservation_id}",
+    response_model=Optional[HospReservation],
 )
-def update_reservation(
+def delete_reservation(
     db: Session = Depends(get_db),
     *,
     hospital_id: int = Path(..., title="The ID of the hospital to read", ge=1),
     reservation_id: int = Path(..., title="The ID of the reservation to read", ge=1),
-    rsrv_in: HospReservationUpdate,
 ):
     hsp = hospital.read(db, hospital_id=hospital_id)
     if not hsp:
@@ -149,7 +146,5 @@ def update_reservation(
         raise HTTPException(
             status_code=404, detail="Reservation not found",
         )
-    hosp_reservation = reservation.update_hosp(
-        db, rsrv=hosp_reservation, rsrv_in=rsrv_in
-    )
+    hosp_reservation = reservation.delete_hosp(db, rsrv=hosp_reservation)
     return hosp_reservation

@@ -18,7 +18,7 @@ def read_by_tel(db: Session, tel: str) -> Optional[User]:
     return db.query(User).filter(User.tel == tel).first()
 
 
-def authenticate(db_session: Session, *, email: str, password: str) -> Optional[User]:
+def authenticate(db_session: Session, email: str, password: str) -> Optional[User]:
     user = read_by_email(db_session, email=email)
     if not user:
         return None
@@ -35,11 +35,11 @@ def is_shop_owner(user: User, shop_id: int) -> bool:
     return user.shop_id == shop_id
 
 
-def read_multi(db_session: Session, *, skip=0, limit=100) -> List[Optional[User]]:
+def read_multi(db_session: Session, skip: int, limit: int) -> List[Optional[User]]:
     return db_session.query(User).offset(skip).limit(limit).all()
 
 
-def create(db: Session, *, user: UserCreate) -> User:
+def create(db: Session, user: UserCreate) -> User:
     geom = f"POINT({user.lon} {user.lat})"
     db_user = User(
         name=user.name,
@@ -56,7 +56,7 @@ def create(db: Session, *, user: UserCreate) -> User:
     return db_user
 
 
-def register(db: Session, *, user: User, user_in: UserRegister) -> User:
+def register(db: Session, user: User, user_in: UserRegister) -> User:
     original_data = jsonable_encoder(user)
     update_data = user_in.dict(skip_defaults=True)
     for field in original_data:
@@ -69,7 +69,7 @@ def register(db: Session, *, user: User, user_in: UserRegister) -> User:
     return user
 
 
-def update(db: Session, *, user: User, user_in: UserUpdate) -> User:
+def update(db: Session, user: User, user_in: UserUpdate) -> User:
     original_data = jsonable_encoder(user)
     update_data = user_in.dict(skip_defaults=True)
     for field in original_data:

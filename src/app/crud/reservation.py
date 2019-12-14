@@ -4,7 +4,6 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from app.schemas.reservation import (
     HospReservationCreate,
-    HospReservationUpdate,
     ShopReservationCreate,
     ShopReservationUpdate,
 )
@@ -12,7 +11,7 @@ from app.models.reservation import HospReservation, ShopReservation
 
 
 def read_multi_hosp(
-    db: Session, *, hospital_id: int, skip: int, limit: int,
+    db: Session, hospital_id: int, skip: int, limit: int
 ) -> List[HospReservation]:
     return (
         db.query(HospReservation)
@@ -24,18 +23,35 @@ def read_multi_hosp(
 
 
 def read_hosp(
-    db: Session, *, hospital_id: int, reservation_id: int
+    db: Session,
+    hospital_id: Optional[int] = None,
+    reservation_id: Optional[int] = None,
 ) -> Optional[HospReservation]:
-    return (
-        db.query(HospReservation)
-        .filter(HospReservation.hosp_id == hospital_id)
-        .filter(HospReservation.id == reservation_id)
-        .first()
-    )
+    if hospital_id is not None and reservation_id is not None:
+        return (
+            db.query(HospReservation)
+            .filter(HospReservation.hosp_id == hospital_id)
+            .filter(HospReservation.id == reservation_id)
+            .first()
+        )
+    elif hospital_id is not None:
+        return (
+            db.query(HospReservation)
+            .filter(HospReservation.hosp_id == hospital_id)
+            .first()
+        )
+    elif reservation_id is not None:
+        return (
+            db.query(HospReservation)
+            .filter(HospReservation.id == reservation_id)
+            .first()
+        )
+    else:
+        return db.query(HospReservation).first()
 
 
 def create_hosp(
-    db: Session, *, hospital_id: int, rsrv_in: HospReservationCreate
+    db: Session, hospital_id: int, rsrv_in: HospReservationCreate
 ) -> HospReservation:
     db_reservation = HospReservation(
         user_id=rsrv_in.user_id, hosp_id=hospital_id, date=rsrv_in.date
@@ -46,22 +62,15 @@ def create_hosp(
     return db_reservation
 
 
-def update_hosp(
-    db: Session, *, rsrv: HospReservation, rsrv_in: HospReservationUpdate
-) -> HospReservation:
-    reservation_data = jsonable_encoder(rsrv)
-    update_data = rsrv_in.dict(skip_defaults=True)
-    for field in reservation_data:
-        if field in update_data:
-            setattr(rsrv, field, update_data[field])
-    db.add(rsrv)
+def delete_hosp(db: Session, rsrv: HospReservation) -> Optional[HospReservation]:
+    rsrv_id = rsrv.id
+    db.delete(rsrv)
     db.commit()
-    db.refresh(rsrv)
-    return rsrv
+    return db.query(HospReservation).filter(HospReservation.id == rsrv_id).first()
 
 
 def read_multi_shop(
-    db: Session, *, shop_id: int, skip: int, limit: int,
+    db: Session, shop_id: int, skip: int, limit: int,
 ) -> List[ShopReservation]:
     return (
         db.query(ShopReservation)
@@ -73,7 +82,7 @@ def read_multi_shop(
 
 
 def read_shop(
-    db: Session, *, shop_id: int, reservation_id: int
+    db: Session, shop_id: int, reservation_id: int
 ) -> Optional[ShopReservation]:
     return (
         db.query(ShopReservation)
@@ -84,10 +93,13 @@ def read_shop(
 
 
 def create_shop(
-    db: Session, *, shop_id: int, rsrv_in: ShopReservationCreate
+    db: Session, shop_id: int, rsrv_in: ShopReservationCreate
 ) -> ShopReservation:
     db_reservation = ShopReservation(
-        user_id=rsrv_in.user_id, shop_id=shop_id, date=rsrv_in.date
+        user_id=rsrv_in.user_id,
+        shop_id=shop_id,
+        date=rsrv_in.date,
+        prescription_id=rsrv_in.prescription_id,
     )
     db.add(db_reservation)
     db.commit()
@@ -96,7 +108,7 @@ def create_shop(
 
 
 def update_shop(
-    db: Session, *, rsrv: ShopReservation, rsrv_in: ShopReservationUpdate
+    db: Session, rsrv: ShopReservation, rsrv_in: ShopReservationUpdate
 ) -> ShopReservation:
     reservation_data = jsonable_encoder(rsrv)
     update_data = rsrv_in.dict(skip_defaults=True)

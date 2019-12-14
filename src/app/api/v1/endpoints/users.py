@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[User])
 def read_users(
-    db: Session = Depends(get_db), *, skip: int = 0, limit: conint(le=100) = 100,
+    db: Session = Depends(get_db), skip: int = 0, limit: conint(le=100) = 100,
 ):
     users = user.read_multi(db, skip=skip, limit=limit)
     return users
@@ -28,7 +28,6 @@ def create(db: Session = Depends(get_db), *, user_in: UserCreate):
 @router.get("/{user_id}", response_model=User)
 def read(
     db: Session = Depends(get_db),
-    *,
     user_id: int = Path(..., title="The ID of the user to read", ge=1),
 ):
     usr = user.read(db, user_id=user_id)

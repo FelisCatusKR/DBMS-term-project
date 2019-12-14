@@ -9,7 +9,3 @@ services:
       - ./src/app:/app
     ports:
       - "80:80"
-
-  db:
-    ports:
-      - "5432:5432"

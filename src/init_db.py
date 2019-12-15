@@ -16,8 +16,8 @@ from app.schemas.drug import DrugCreate
 from app.models.user import User
 from app.models.hospital import Hospital
 from app.models.shop import Shop
-from app.models.drug import Drug, PrescribedDrug
-from app.models.prescription import Prescription
+from app.models.drug import Drug
+from app.models.prescription import PrescribedDrug, Prescription
 from app.models.reservation import HospReservation, ShopReservation
 
 

@@ -36,9 +36,6 @@ class ShopUpdate(ShopBase):
     name: Optional[constr(min_length=1)] = None
     addr: Optional[constr(min_length=1)] = None
     tel: Optional[constr(regex="^(0\d{1,2})?-?\d{3,4}-?\d{4}$")] = None
-    lon: Optional[confloat(ge=-180.0, le=180.0)]
-    lat: Optional[confloat(ge=-90.0, le=90.0)]
-    is_active: Optional[bool] = None
     is_pharmacy: Optional[bool] = None
 
 
@@ -49,7 +46,6 @@ class Shop(ShopBase):
     tel: str
     lon: float
     lat: float
-    is_active: bool
     is_pharmacy: bool
     admins: List[User] = []
     reservations: List[ShopReservation] = []

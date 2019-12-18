@@ -19,12 +19,13 @@ def read_by_distance(
     skip: int,
     limit: int,
 ) -> List[Optional[Shop]]:
-    point = f"POINT({lon} {lat})"
+    point = f"SRID=4326;POINT({lon} {lat})"
+    distance = Shop.geom.distance_centroid(point)
     if q is None:
         return (
             db.query(Shop)
-            .filter(func.ST_Distance_Sphere(Shop.geom, point) < radius)
-            .order_by(func.ST_Distance_Sphere(Shop.geom, point))
+            .filter(func.ST_DWithin(Shop.geom, point, float(radius)))
+            .order_by(distance)
             .offset(skip)
             .limit(limit)
             .all()
@@ -33,8 +34,8 @@ def read_by_distance(
         return (
             db.query(Shop)
             .filter(Shop.name.like(f"%{q}%"))
-            .filter(func.ST_Distance_Sphere(Shop.geom, point) < radius)
-            .order_by(func.ST_Distance_Sphere(Shop.geom, point))
+            .filter(func.ST_DWithin(Shop.geom, point, float(radius)))
+            .order_by(distance)
             .offset(skip)
             .limit(limit)
             .all()
@@ -42,7 +43,7 @@ def read_by_distance(
 
 
 def create(db: Session, shop_in: ShopCreate) -> Shop:
-    geom = f"POINT({shop_in.lon} {shop_in.lat})"
+    geom = f"SRID=4326;POINT({shop_in.lon} {shop_in.lat})"
     db_shop = Shop(
         name=shop_in.name,
         addr=shop_in.addr,

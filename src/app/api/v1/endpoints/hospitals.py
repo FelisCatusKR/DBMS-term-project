@@ -21,7 +21,7 @@ def read_hospitals(
     skip: int = 0,
     limit: conint(le=100) = 100,
     lat: confloat(ge=-90.0, le=90.0) = 37.5585146,
-    lon: confloat(ge=-180.0, le=180.0) = 127.0331892,
+    lon: confloat(ge=-180.0, le=180.0) = 127.0431892,
     radius: conint(le=5000) = 5000,
 ):
     hospitals = hospital.read_by_distance(

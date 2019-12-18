@@ -13,7 +13,7 @@ class Hospital(Base):
     tel: str = Column(String, nullable=False)
     lon: float = Column(Float, nullable=False)
     lat: float = Column(Float, nullable=False)
-    geom: str = Column(Geometry("POINT"), nullable=False)
+    geom: str = Column(Geometry("POINT", srid=4326), nullable=False)
     strCnd: int = Column(Integer, nullable=False)
     dutyTime1s: time = Column(Time)
     dutyTime1c: time = Column(Time)

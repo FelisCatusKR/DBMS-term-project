@@ -134,4 +134,4 @@ src/%SystemDrive%/
 # Projectwise
 app.env
 *.csv
-
+.idea/

@@ -1,15 +1,13 @@
 FROM python:3.7
 
-RUN pip install --no-cache-dir fastapi \
-                               uvicorn \
-                               SQLAlchemy \
-                               GeoAlchemy2 \
-                               psycopg2-binary \
-                               requests
+ENV PYTHONUNBUFFERED 1
 
-ENV PYTHONPATH=/app
+COPY ./init_db.py ./requirements.txt /
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./init_db.py ./customers.csv ./drugs.csv ./start.sh /
-CMD chmod +x /start.sh
+ENV APP_MODE DEV
 
-CMD ["/start.sh"]
+COPY ./start-reload.sh ./customers.csv ./drugs.csv /
+RUN chmod +x /start-reload.sh
+
+CMD ["/start-reload.sh"]

@@ -351,35 +351,37 @@ def init_db():
     print("Shops added")
     print("")
 
-    # Adding users from customers.csv
-    print("============================")
-    print("Adding initial user data")
-    print("============================")
-    with open("customers.csv", mode="r", newline="", encoding="UTF-8") as r:
-        reader = csv.DictReader(r)
-        idx: int = 1
-        for item in reader:
-            add_user(item)
-            if idx % 500 is 0:
-                print(f"{idx} lines processed")
-            idx += 1
-    print("Users added")
-    print("")
+    # Adding users from customers.csv (Dev only)
+    if os.environ["APP_MODE"] == "DEV":
+        print("============================")
+        print("Adding initial user data")
+        print("============================")
+        with open("customers.csv", mode="r", newline="", encoding="UTF-8") as r:
+            reader = csv.DictReader(r)
+            idx: int = 1
+            for item in reader:
+                add_user(item)
+                if idx % 500 is 0:
+                    print(f"{idx} lines processed")
+                idx += 1
+        print("Users added")
+        print("")
 
-    # Adding drugs from drugs.csv
-    print("============================")
-    print("Adding initial drug data")
-    print("============================")
-    with open("drugs.csv", mode="r", newline="", encoding="UTF-8") as r:
-        reader = csv.DictReader(r)
-        idx: int = 1
-        for item in reader:
-            add_drug(item)
-            if idx % 500 is 0:
-                print(f"{idx} lines processed")
-            idx += 1
-    print("Drugs added")
-    print("")
+    # Adding drugs from drugs.csv (Dev only)
+    if os.environ["APP_MODE"] == "DEV":
+        print("============================")
+        print("Adding initial drug data")
+        print("============================")
+        with open("drugs.csv", mode="r", newline="", encoding="UTF-8") as r:
+            reader = csv.DictReader(r)
+            idx: int = 1
+            for item in reader:
+                add_drug(item)
+                if idx % 500 is 0:
+                    print(f"{idx} lines processed")
+                idx += 1
+        print("Drugs added")
+        print("")
 
 
 if __name__ == "__main__":

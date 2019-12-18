@@ -1,4 +1,6 @@
 from typing import List, Optional
+
+from sqlalchemy import cast
 from sqlalchemy.orm import Session
 from geoalchemy2 import *
 from fastapi.encoders import jsonable_encoder
@@ -19,12 +21,13 @@ def read_by_distance(
     skip: int,
     limit: int,
 ) -> List[Optional[Hospital]]:
-    point = f"POINT({lon} {lat})"
+    point = f"SRID=4326;POINT({lon} {lat})"
+    distance = Hospital.geom.distance_centroid(point)
     if q is None:
         return (
             db.query(Hospital)
-            .filter(func.ST_Distance_Sphere(Hospital.geom, point) < radius)
-            .order_by(func.ST_Distance_Sphere(Hospital.geom, point))
+            .filter(func.ST_DWithin(cast(Hospital.geom, Geography), cast(point, Geography), radius))
+            .order_by(distance)
             .offset(skip)
             .limit(limit)
             .all()
@@ -33,8 +36,8 @@ def read_by_distance(
         return (
             db.query(Hospital)
             .filter(Hospital.name.like(f"%{q}%"))
-            .filter(func.ST_Distance_Sphere(Hospital.geom, point) < radius)
-            .order_by(func.ST_Distance_Sphere(Hospital.geom, point))
+            .filter(func.ST_DWithin(cast(Hospital.geom, Geography), cast(point, Geography), radius))
+            .order_by(distance)
             .offset(skip)
             .limit(limit)
             .all()
@@ -42,7 +45,7 @@ def read_by_distance(
 
 
 def create(db: Session, hospital_in: HospitalCreate) -> Hospital:
-    geom = f"POINT({hospital_in.lon} {hospital_in.lat})"
+    geom = f"SRID=4326;POINT({hospital_in.lon} {hospital_in.lat})"
     db_hospital = Hospital(
         name=hospital_in.name,
         addr=hospital_in.addr,

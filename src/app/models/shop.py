@@ -12,7 +12,7 @@ class Shop(Base):
     lon = Column(Float, nullable=False)
     lat = Column(Float, nullable=False)
     tel = Column(String, nullable=False)
-    geom = Column(Geometry("POINT"), nullable=False)
+    geom = Column(Geometry("POINT", srid=4326), nullable=False)
     is_pharmacy = Column(Boolean, nullable=False, index=True)
     dutyTime1s = Column(Time)
     dutyTime1c = Column(Time)

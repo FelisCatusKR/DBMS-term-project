@@ -7,3 +7,6 @@ services:
       dockerfile: dev.Dockerfile
     volumes:
       - ./src/app:/app
+  db:
+    ports:
+      - "5432:5432"

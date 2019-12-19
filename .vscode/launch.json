@@ -14,8 +14,7 @@
         "POSTGRES_DB": "dbapp",
         "POSTGRES_USER": "dbuser",
         "POSTGRES_PASSWORD": "1234",
-        "SERVICE_KEY": "ddRusxDAMK2PwPUVPRuHJoOKJkPcX5knQF3PKSjQ7/8QV3Dl+arc8qw01DQrY2kV4X7TH/hIpi+tB1MTXxZlng==",
-        "PYTHONUNBUFFERED": "1"
+        "SERVICE_KEY": "ddRusxDAMK2PwPUVPRuHJoOKJkPcX5knQF3PKSjQ7/8QV3Dl+arc8qw01DQrY2kV4X7TH/hIpi+tB1MTXxZlng=="
       },
       "console": "integratedTerminal"
     },

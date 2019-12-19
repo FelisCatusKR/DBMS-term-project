@@ -6,7 +6,7 @@
 version: "3"
 services:
   # Update this to the name of the service you want to work with in your docker-compose.yml file
-  backend:
+  app:
     # You may want to add a non-root user to your Dockerfile. On Linux, this will prevent
     # new files getting created as root. See https://aka.ms/vscode-remote/containers/non-root-user
     # for the needed Dockerfile updates and then uncomment the next line.

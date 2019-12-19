@@ -19,6 +19,7 @@ from app.models.shop import Shop
 from app.models.drug import Drug
 from app.models.prescription import PrescribedDrug, Prescription
 from app.models.reservation import HospReservation, ShopReservation
+from app.models.favorite import FavoriteHospital, FavoriteShop
 
 
 def request_url(url: str, serviceKey: str, page: int) -> Optional[dict]:
@@ -307,20 +308,20 @@ def init_db():
     )
     totPage = 700
     curPage = 1
-    while curPage <= totPage:
-        js = request_url(url, serviceKey, curPage)
-        if js is not {}:
-            if curPage is 1:
-                totPage = int(js["response"]["body"]["totalCount"] / 100)
-                print(
-                    "Total hospitals in API: ",
-                    int(js["response"]["body"]["totalCount"]),
-                )
-            for item in js["response"]["body"]["items"]["item"]:
-                add_hospital(item)
-        if curPage % 20 is 0:
-            print(f"{curPage} pages processed ({curPage} / {totPage})")
-        curPage += 1
+    # while curPage <= totPage:
+    #     js = request_url(url, serviceKey, curPage)
+    #     if js is not {}:
+    #         if curPage is 1:
+    #             totPage = int(js["response"]["body"]["totalCount"] / 100)
+    #             print(
+    #                 "Total hospitals in API: ",
+    #                 int(js["response"]["body"]["totalCount"]),
+    #             )
+    #         for item in js["response"]["body"]["items"]["item"]:
+    #             add_hospital(item)
+    #     if curPage % 20 is 0:
+    #         print(f"{curPage} pages processed ({curPage} / {totPage})")
+    #     curPage += 1
     print("Hospitals added")
     print("")
 
@@ -333,21 +334,21 @@ def init_db():
     )
     totPage = 200
     curPage = 1
-    while curPage <= totPage:
-        js = request_url(url, serviceKey, curPage)
-        if js is not {}:
-            if curPage is 1:
-                totPage = int(js["response"]["body"]["totalCount"] / 100)
-                print(
-                    "Total shops in API: ", int(js["response"]["body"]["totalCount"]),
-                )
-            for item in js["response"]["body"]["items"]["item"]:
-                add_shop(item)
-            totPage = int(js["response"]["body"]["totalCount"] / 100)
-        if curPage % 20 is 0:
-            print(f"{curPage} pages processed ({curPage} / {totPage})")
-        curPage += 1
-        curPage += 1
+    # while curPage <= totPage:
+    #     js = request_url(url, serviceKey, curPage)
+    #     if js is not {}:
+    #         if curPage is 1:
+    #             totPage = int(js["response"]["body"]["totalCount"] / 100)
+    #             print(
+    #                 "Total shops in API: ", int(js["response"]["body"]["totalCount"]),
+    #             )
+    #         for item in js["response"]["body"]["items"]["item"]:
+    #             add_shop(item)
+    #         totPage = int(js["response"]["body"]["totalCount"] / 100)
+    #     if curPage % 20 is 0:
+    #         print(f"{curPage} pages processed ({curPage} / {totPage})")
+    #     curPage += 1
+    #     curPage += 1
     print("Shops added")
     print("")
 

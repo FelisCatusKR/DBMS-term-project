@@ -1,11 +1,13 @@
 from pydantic import *
 from typing import List
 
-from fastapi import APIRouter, Depends, Path, HTTPException
+from fastapi import APIRouter, Depends, Security, Path, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.utils.db import get_db
+from app.api.utils.security import get_current_user
 from app.crud import user
+from app.models.user import User as DBUser
 from app.schemas.user import User, UserCreate, UserRegister, UserUpdate
 
 router = APIRouter()
@@ -23,6 +25,16 @@ def read_users(
 def create(db: Session = Depends(get_db), *, user_in: UserCreate):
     usr = user.create(db, user=user_in)
     return usr
+
+
+@router.get("/me", response_model=User)
+def read_user_me(
+    db: Session = Depends(get_db), current_user: DBUser = Security(get_current_user),
+):
+    """
+    Get current user.
+    """
+    return current_user
 
 
 @router.get("/{user_id}", response_model=User)

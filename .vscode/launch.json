@@ -22,14 +22,16 @@
       "name": "Python: FastAPI",
       "type": "python",
       "request": "launch",
+      "cwd": "/",
       "module": "uvicorn",
       "env": {
-        "POSTGRES_HOST": "localhost",
+        "POSTGRES_HOST": "db",
         "POSTGRES_DB": "dbapp",
         "POSTGRES_USER": "dbuser",
-        "POSTGRES_PASSWORD": "1234"
+        "POSTGRES_PASSWORD": "1234",
+        "PYTHONPATH": "/app/"
       },
-      "args": ["app.main:app", "--reload"],
+      "args": ["app.main:app", "--port", "80", "--host", "0.0.0.0", "--reload"],
       "jinja": true
     }
   ]

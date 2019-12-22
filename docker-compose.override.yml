@@ -7,6 +7,16 @@ services:
       dockerfile: dev.Dockerfile
     volumes:
       - ./src/app:/app
+
   db:
     ports:
       - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=asdf@asdf.com
+      - PGADMIN_DEFAULT_PASSWORD=1234
+      - PGADMIN_LISTEN_PORT=8080
+    ports:
+      - "8080:8080"

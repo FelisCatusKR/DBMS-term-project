@@ -17,11 +17,12 @@ router = APIRouter()
 
 @router.get("/", response_model=List[Prescription])
 def read_prescriptions(
+    hospital_id: Optional[int] = None,
     skip: Optional[int] = 0,
     limit: Optional[conint(le=100)] = 100,
     db: Session = Depends(get_db),
 ):
-    prescriptions = prescription.read_prescriptions(db, skip=skip, limit=limit)
+    prescriptions = prescription.read_prescriptions(db, hospital_id=hospital_id, skip=skip, limit=limit)
     return prescriptions
 
 

@@ -1,7 +1,9 @@
 from typing import List, Optional
+
 from pydantic import *
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+
 from app.schemas.prescription import (
     PrescriptionCreate,
     PrescriptionUpdate,
@@ -9,8 +11,11 @@ from app.schemas.prescription import (
 from app.models.prescription import PrescribedDrug, Prescription
 
 
-def read_prescriptions(db: Session, skip: int, limit: int) -> List[Prescription]:
-    return db.query(Prescription).offset(skip).limit(limit).all()
+def read_prescriptions(db: Session, hospital_id: Optional[int], skip: int, limit: int) -> List[Prescription]:
+    if hospital_id is None:
+        return db.query(Prescription).offset(skip).limit(limit).all()
+    else:
+        return db.query(Prescription).filter(Prescription.hospital_reservation.hosp_id == hospital_id).offset(skip).limit(limit).all()
 
 
 def read(db: Session, prescription_id: int) -> Optional[Prescription]:
@@ -30,6 +35,7 @@ def read_by_hospital_reservation_id(
 def create(db: Session, pres_in: PrescriptionCreate) -> Prescription:
     db_prescription = Prescription(
         hospital_reservation_id=pres_in.hospital_reservation_id,
+        prescribed_date=pres_in.prescribed_date
     )
     for drug in pres_in.prescribed_drugs:
         db_prescription.prescribed_drugs += [
